@@ -2,15 +2,20 @@ package com.ride.Controller;
 import com.ride.DTO.SignupDto;
 import com.ride.DTO.LoginDTO;
 import com.ride.DTO.MessageDTO;
+import io.jsonwebtoken.Claims;
 import com.ride.Model.Signupmodel;
 import com.ride.Servicelayer.Signuplayer;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.http.ResponseEntity;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import jakarta.servlet.http.HttpServletResponse;
 
 
 
@@ -42,9 +47,32 @@ public class Signupcon {
     }
 
     @PostMapping("/login")
-    public MessageDTO login(@Valid @RequestBody LoginDTO loginDTO) {
-     signuplayer.login(loginDTO.getEmail(), loginDTO.getPassword());
-        return new MessageDTO("Login successful");  }
+    public MessageDTO login(@Valid @RequestBody LoginDTO loginDTO,HttpServletResponse response) {
+
+     String token= signuplayer.login(loginDTO.getEmail(), loginDTO.getPassword());
+     Cookie cookie = new Cookie("ridesite_token", token);
+        cookie.setHttpOnly(true);
+        cookie.setPath("/");
+        cookie.setMaxAge(60 * 60); // 1 hour
+        cookie.setSecure(true); // Set to true if using HTTPS
+        response.addCookie(cookie);
+
+     
+        return new MessageDTO("Login successful"); 
+     }
+
+        @GetMapping("/me")
+        public MessageDTO getCurrentUser(HttpServletRequest request) {
+            Claims claims = (Claims) request.getAttribute("claims");
+            if (claims == null) {
+                return new MessageDTO("No user information available");
+            }
+            String email = claims.getSubject();
+            String name = claims.get("name", String.class);
+            String role = claims.get("role", String.class);
+            
+            return new MessageDTO("Current user: " + name + " (" + email + ") with role: " + role);
+        }
 
     
 }

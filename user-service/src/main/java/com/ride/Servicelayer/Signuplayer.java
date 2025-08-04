@@ -1,6 +1,7 @@
 package com.ride.Servicelayer;
 import com.ride.Model.Signupmodel;
 import com.ride.Repository.Signuprepo;
+import com.ride.Utility.JWT;
 
 
   import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +12,9 @@ import com.ride.Repository.Signuprepo;
 public class Signuplayer {
  @Autowired
     private Signuprepo signupRepo;
+
+    @Autowired
+    private JWT jwtUtility;
 
     @Autowired
     private BCryptPasswordEncoder passwordEncoder;
@@ -32,15 +36,21 @@ public class Signuplayer {
 
        
     }
-    public void login(String email, String password) {
+    public String login(String email, String password) {
         Signupmodel user = signupRepo.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         if (!passwordEncoder.matches(password, user.getPassword())) {
             throw new RuntimeException("Invalid credentials");
         }
-
+  return jwtUtility.generateToken(
+                user.getEmail(),
+                user.getRole(),
+                user.getName(),
+                user.getId()
+        );
         
     }
+
     
 }
