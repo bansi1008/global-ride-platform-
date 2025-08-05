@@ -69,7 +69,7 @@ protected void doFilterInternal(HttpServletRequest request, HttpServletResponse 
     } else {
         response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Authorization header or token cookie missing or invalid");
         return;
-    }
+    }   
 
     filterChain.doFilter(request, response);
 }

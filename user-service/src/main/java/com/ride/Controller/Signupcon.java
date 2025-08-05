@@ -74,5 +74,16 @@ public class Signupcon {
             return new MessageDTO("Current user: " + name + " (" + email + ") with role: " + role);
         }
 
+        @PostMapping("/logout")
+        public ResponseEntity<MessageDTO> logout(HttpServletResponse response) {
+            Cookie cookie = new Cookie("ridesite_token", null);
+            cookie.setHttpOnly(true);
+            cookie.setPath("/");
+            cookie.setMaxAge(0); 
+            response.addCookie(cookie);
+
+            return ResponseEntity.ok(new MessageDTO("Logout successful"));
+        }
+
     
 }
